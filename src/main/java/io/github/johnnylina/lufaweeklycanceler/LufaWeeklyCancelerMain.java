@@ -6,7 +6,12 @@ import java.util.Scanner;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 
+import io.github.johnnylina.lufaweeklycanceler.CancelerAPI.CancelerAPI;
+import io.github.johnnylina.lufaweeklycanceler.CancelerAPI.CancelerAPIResult;
 import io.github.johnnylina.lufaweeklycanceler.CancelerConfig.CancelerConfig;
 
 public class LufaWeeklyCancelerMain {
@@ -35,11 +40,32 @@ public class LufaWeeklyCancelerMain {
             JSONObject jsonConfig = new JSONObject(configJsonStr);
             config.username = jsonConfig.getString("username");
             config.password = jsonConfig.getString("password");
+            config.debug = jsonConfig.getBoolean("debug");
+            config.webhook = jsonConfig.getString("webhook");
+            config.mention = jsonConfig.getString("mention");
         } catch (JSONException jsone) {
             System.out.println("Cannot parse JSON properly, make sure the syntax is correct and object matches the template.");
             System.exit(1);
         }
 
-        System.out.println(config.username + " " + config.password);
+        // Create new API
+        CancelerAPI api = new CancelerAPI(config);
+
+        // Create new WebDriver instance
+        FirefoxOptions options = new FirefoxOptions();
+        options.setHeadless(!config.debug);
+        WebDriver wd = new FirefoxDriver();
+
+        // Execute
+        CancelerAPIResult result = api.execute(wd);
+
+        // Check execution result
+        if (result.error != null) {
+            System.out.println(result.error);
+            System.exit(1);
+        }
+
+        // Notify Discord server's channel via webhook POST request
+        
     }
 }
