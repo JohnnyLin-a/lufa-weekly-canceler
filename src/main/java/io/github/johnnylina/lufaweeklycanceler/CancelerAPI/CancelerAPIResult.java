@@ -1,11 +1,11 @@
 package io.github.johnnylina.lufaweeklycanceler.CancelerAPI;
 
 public class CancelerAPIResult {
-    public String error;
+    public String message;
     public boolean success;
 
-    public CancelerAPIResult(String error, boolean success) {
-        this.error = error;
+    public CancelerAPIResult(String message, boolean success) {
+        this.message = message;
         this.success = success;
     }
 }

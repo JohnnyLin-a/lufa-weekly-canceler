@@ -18,6 +18,6 @@ public class CancelerAPI {
 
         // Then cancel basket.
 
-        return new CancelerAPIResult(null, true);
+        return new CancelerAPIResult("Execution not yet implemented", false);
     }
 }

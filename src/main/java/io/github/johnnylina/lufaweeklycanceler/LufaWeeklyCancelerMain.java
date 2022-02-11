@@ -2,6 +2,11 @@ package io.github.johnnylina.lufaweeklycanceler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Scanner;
 
 import org.json.JSONException;
@@ -15,7 +20,7 @@ import io.github.johnnylina.lufaweeklycanceler.CancelerAPI.CancelerAPIResult;
 import io.github.johnnylina.lufaweeklycanceler.CancelerConfig.CancelerConfig;
 
 public class LufaWeeklyCancelerMain {
-    public static void main(String []args) {
+    public static void main(String []args) throws Exception {
         // Load config
         String configJsonStr = System.getenv("LUFA_CANCELER_CONFIG");
 
@@ -58,14 +63,27 @@ public class LufaWeeklyCancelerMain {
 
         // Execute
         CancelerAPIResult result = api.execute(wd);
-
-        // Check execution result
-        if (result.error != null) {
-            System.out.println(result.error);
-            System.exit(1);
-        }
+        wd.close();
 
         // Notify Discord server's channel via webhook POST request
-        
+        // Optional step so don't crash execution if webhook is not set
+        if (config.webhook == "") {
+            System.exit(0);
+        }
+
+        String discordMsg = config.mention + " Success: " + result.success + " " + result.message;
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(config.webhook))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString("{\"content\":\"" + discordMsg + "\"}"))
+            .build();
+        try {
+            client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            // Failed to send http request, do nothing
+            // I mean, what else is there to do? lol
+        }
     }
 }
