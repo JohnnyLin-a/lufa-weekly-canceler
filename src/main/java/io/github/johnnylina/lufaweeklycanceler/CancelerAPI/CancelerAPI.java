@@ -13,6 +13,7 @@ public class CancelerAPI {
 
     public CancelerAPIResult execute(WebDriver wd) {
         // Do main logic here
+        wd.get("https://montreal.lufa.com/en/login");
 
         // Login to Lufa
 
