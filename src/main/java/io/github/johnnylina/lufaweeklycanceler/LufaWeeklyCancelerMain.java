@@ -48,6 +48,7 @@ public class LufaWeeklyCancelerMain {
             config.debug = jsonConfig.getBoolean("debug");
             config.webhook = jsonConfig.getString("webhook");
             config.mention = jsonConfig.getString("mention");
+            config.user_id = jsonConfig.getString("user_id");
         } catch (JSONException jsone) {
             System.out.println("Cannot parse JSON properly, make sure the syntax is correct and object matches the template.");
             System.exit(1);
@@ -64,6 +65,7 @@ public class LufaWeeklyCancelerMain {
         // Execute
         CancelerAPIResult result = api.execute(wd);
         wd.close();
+        System.out.println("Result: " + result.success + " Message: " + result.message);
 
         // Notify Discord server's channel via webhook POST request
         // Optional step so don't crash execution if webhook is not set

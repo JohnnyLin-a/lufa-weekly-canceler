@@ -6,4 +6,5 @@ public class CancelerConfig {
     public boolean debug;
     public String webhook;
     public String mention;
+    public String user_id;
 }
