@@ -12,9 +12,14 @@ jobs:
       LUFA_CANCELER_CONFIG: ${{ secrets.LUFA_CANCELER_CONFIG }}
     steps:
       - 
+        name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: master
+      - 
         name: Build app
         run: |
-          docker build -t canceler -f Dockerfile .
+          docker build -t canceler .
       - 
         name: Build app
         run: |
