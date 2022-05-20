@@ -1,0 +1,9 @@
+version: '2.4'
+
+services:
+  canceler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      LUFA_CANCELER_CONFIG: ""
