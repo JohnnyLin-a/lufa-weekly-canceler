@@ -14,7 +14,7 @@ jobs:
       - 
         name: Build app
         run: |
-          docker build -t canceler .
+          docker build -t canceler -f Dockerfile .
       - 
         name: Build app
         run: |
