@@ -116,7 +116,7 @@ public class CancelerAPI {
         List<String> failedWeeks = new ArrayList<>();
         weeksToSkip.forEach(week -> {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(5000);
                 HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create("https://montreal.lufa.com/en/users/addVacation"))
                     .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
