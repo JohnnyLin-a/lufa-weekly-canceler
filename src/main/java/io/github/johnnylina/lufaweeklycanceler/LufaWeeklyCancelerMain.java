@@ -8,6 +8,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Scanner;
+import java.util.logging.Level;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,8 +60,12 @@ public class LufaWeeklyCancelerMain {
 
         // Create new WebDriver instance
         FirefoxOptions options = new FirefoxOptions();
-        options.setHeadless(!config.debug);
-        WebDriver wd = new FirefoxDriver();
+        if (!config.debug) {
+            System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "firefoxLog");
+            java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
+            options.setHeadless(true);
+        }
+        WebDriver wd = new FirefoxDriver(options);
 
         // Execute
         CancelerAPIResult result = api.execute(wd);
