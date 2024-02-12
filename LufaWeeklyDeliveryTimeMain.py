@@ -17,7 +17,6 @@ class DeliveryTimeConfig:
     def __init__(self):
         self.username = ""
         self.password = ""
-        self.debug = False
 
 class DeliveryTimeAPIResult:
     def __init__(self, message, success):
@@ -110,7 +109,6 @@ def execute():
         json_config = json.loads(config_json_str)
         config.username = json_config["username"]
         config.password = json_config["password"]
-        config.debug = json_config["debug"]
 
     except json.JSONDecodeError:
         print("Cannot parse JSON properly, make sure the syntax is correct and object matches the template.")
