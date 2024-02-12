@@ -1,0 +1,4 @@
+requests
+selenium
+flask
+flask_cors
