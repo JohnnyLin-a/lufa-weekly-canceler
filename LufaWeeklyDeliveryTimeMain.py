@@ -17,6 +17,7 @@ class DeliveryTimeConfig:
     def __init__(self):
         self.username = ""
         self.password = ""
+        self.user_id = ""
 
 class DeliveryTimeAPIResult:
     def __init__(self, message, success):
@@ -66,23 +67,58 @@ class DeliveryTimeAPI:
             execution_result.message = "Did not redirect to marketplace after login"
             return execution_result
         
-        lufa_state = wd.get_cookie('lufaState')
+        lufa_state = wd.get_cookie("lufaState")
         if lufa_state is None:
             execution_result.message = "Did not login successfully, no cookie."
             return execution_result
 
-        # Get notebox-countdown text
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "Cookie": f"{lufa_state['name']}={lufa_state['value']}"
+        }
+        data = {"user_id": self.config.user_id}
+        
+        #Get order details for orderID
+        response = requests.post("https://montreal.lufa.com/en/superMarket/GetUserOrderDetails", headers=headers, data=data)
+
+        current_order_id = ""
+
         try:
-            WebDriverWait(wd, 30).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "notebox-eta"))
-            )
-            notebox_eta = wd.find_element(By.CLASS_NAME, "notebox-eta")
-            notebox_eta_text = notebox_eta.text
-            execution_result.message = notebox_eta_text
-            execution_result.success = True
-        except NoSuchElementException:
-            execution_result.message = "Cannot find ETA"
+            json_response = response.json()
+            current_order_id = json_response["orderId"]
+        except json.JSONDecodeError:
+            execution_result.message = "Did not get back valid json from order data."
             return execution_result
+
+         #Get ETA for orderID
+        data = {"user_id": self.config.user_id, "order_id": current_order_id}
+        response = requests.post("https://montreal.lufa.com/fr/orders/getTrackOrderData", headers=headers, data=data)
+
+        current_eta = ""
+
+        try:
+            json_response = response.json()
+            current_eta = json_response["eta"]
+            execution_result.message = current_eta
+            execution_result.success = True
+        except json.JSONDecodeError:
+            execution_result.message = "Did not get back valid json for eta."
+            return execution_result       
+
+
+
+        # # Get notebox-countdown text
+        # try:
+        #     WebDriverWait(wd, 30).until(
+        #         EC.presence_of_element_located((By.CLASS_NAME, "notebox-eta"))
+        #     )
+        #     notebox_eta = wd.find_element(By.CLASS_NAME, "notebox-eta")
+        #     notebox_eta_text = notebox_eta.text
+        #     execution_result.message = notebox_eta_text
+        #     execution_result.success = True
+        # except NoSuchElementException:
+        #     execution_result.message = "Cannot find ETA"
+        #     return execution_result
 
         return execution_result
 
@@ -109,6 +145,7 @@ def execute():
         json_config = json.loads(config_json_str)
         config.username = json_config["username"]
         config.password = json_config["password"]
+        config.user_id = json_config["user_id"]
 
     except json.JSONDecodeError:
         print("Cannot parse JSON properly, make sure the syntax is correct and object matches the template.")
