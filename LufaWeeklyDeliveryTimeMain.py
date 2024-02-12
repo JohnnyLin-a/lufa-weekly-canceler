@@ -1,7 +1,6 @@
 import os
 import json
 import requests
-from urllib.parse import urlencode
 from selenium import webdriver
 from selenium.webdriver import FirefoxOptions
 from selenium import webdriver
@@ -32,37 +31,50 @@ class DeliveryTimeAPI:
     def execute(self, wd):
         execution_result = DeliveryTimeAPIResult("Initialized", False)
 
+        # Do main logic here
+        wd.get("https://montreal.lufa.com/en/login")
 
-        # Define the payload
-        payload = {
-            "LoginForm[user_email]": self.config.username,
-            "LoginForm[password]": self.config.password,
-            "yt0": "Log in"
-        }
-
-        # URL encode the payload
-        payload_encoded = urlencode(payload)
-
-        # Send the POST request
-        response = requests.post("https://montreal.lufa.com/en/login", data=payload_encoded)
-
-        # Check if login was successful
-        if response.status_code != 200:
-            execution_result.message = "Login failed"
+        # Login to Lufa
+        try:
+            # email field
+            e = wd.find_element(By.CSS_SELECTOR, "#LoginForm_user_email")
+            e.send_keys(self.config.username)
+        except NoSuchElementException:
+            execution_result.message = "Cannot find login form: username field"
             return execution_result
 
-        # Save the cookies
-        cookies = response.cookies
+        try:
+            # password field
+            e = wd.find_element(By.CSS_SELECTOR, "#LoginForm_password")
+            e.send_keys(self.config.password)
+        except NoSuchElementException:
+            execution_result.message = "Cannot find login form: password field"
+            return execution_result
 
-        # Check if the cookie was set
-        if 'lufaState' not in cookies:
+        try:
+            # login button
+            e = wd.find_element(By.CSS_SELECTOR, "input[value=\"Log in\"]")
+            e.click()
+        except NoSuchElementException:
+            execution_result.message = "Cannot find login form: login button"
+            return execution_result
+
+        try:
+            WebDriverWait(wd, 20).until(
+                EC.url_contains("montreal.lufa.com/en/marketplace")
+            )
+        except TimeoutException:
+            execution_result.message = "Did not redirect to marketplace after login"
+            return execution_result
+        
+        lufa_state = wd.get_cookie("lufaState")
+        if lufa_state is None:
             execution_result.message = "Did not login successfully, no cookie."
             return execution_result
 
-
         headers = {
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "Cookie": f"lufaState={cookies['lufaState']}"
+            "Cookie": f"{lufa_state['name']}={lufa_state['value']}"
         }
         data = {"user_id": self.config.user_id}
         
@@ -91,8 +103,7 @@ class DeliveryTimeAPI:
             execution_result.success = True
         except json.JSONDecodeError:
             execution_result.message = "Did not get back valid json for eta."
-            return execution_result     
-
+            return execution_result       
 
         return execution_result
 
@@ -141,5 +152,4 @@ def execute():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=38570)
-
 
