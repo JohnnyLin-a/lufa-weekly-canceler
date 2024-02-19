@@ -23,6 +23,7 @@ class DeliveryTimeConfig:
     def get_url(self, endpoint=""):
         return f"https://montreal.lufa.com/{self.language}/{endpoint}"
 
+class DeliveryTimeAPIResult:    
     def __init__(self):
         self.message = ""
         self.success = False
