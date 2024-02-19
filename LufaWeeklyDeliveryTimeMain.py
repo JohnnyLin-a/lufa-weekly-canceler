@@ -18,6 +18,10 @@ class DeliveryTimeConfig:
         self.username = ""
         self.password = ""
         self.user_id = ""
+        self.language = "en"  # default language is English
+
+    def get_url(self, endpoint=""):
+        return f"https://montreal.lufa.com/{self.language}/{endpoint}"
 
 class DeliveryTimeAPIResult:
     def __init__(self, message, success):
@@ -32,7 +36,7 @@ class DeliveryTimeAPI:
         execution_result = DeliveryTimeAPIResult("Initialized", False)
 
         # Do main logic here
-        wd.get("https://montreal.lufa.com/en/login")
+        wd.get(self.config.get_url("login"))
 
         # Login to Lufa
         try:
@@ -79,7 +83,7 @@ class DeliveryTimeAPI:
         data = {"user_id": self.config.user_id}
         
         #Get order details for orderID
-        response = requests.post("https://montreal.lufa.com/en/superMarket/GetUserOrderDetails", headers=headers, data=data)
+        response = requests.post(self.config.get_url("superMarket/GetUserOrderDetails"), headers=headers, data=data)
 
         current_order_id = ""
 
@@ -92,7 +96,7 @@ class DeliveryTimeAPI:
 
          #Get ETA for orderID
         data = {"user_id": self.config.user_id, "order_id": current_order_id}
-        response = requests.post("https://montreal.lufa.com/fr/orders/getTrackOrderData", headers=headers, data=data)
+        response = requests.post(self.config.get_url("orders/getTrackOrderData"), headers=headers, data=data)
 
         current_eta = ""
 
@@ -131,6 +135,7 @@ def execute():
         config.username = json_config["username"]
         config.password = json_config["password"]
         config.user_id = json_config["user_id"]
+        config.language = json_config.get("language", "en")  # default to English if not specified
 
     except json.JSONDecodeError:
         print("Cannot parse JSON properly, make sure the syntax is correct and object matches the template.")
