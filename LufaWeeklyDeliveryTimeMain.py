@@ -23,17 +23,22 @@ class DeliveryTimeConfig:
     def get_url(self, endpoint=""):
         return f"https://montreal.lufa.com/{self.language}/{endpoint}"
 
-class DeliveryTimeAPIResult:
-    def __init__(self, message, success):
-        self.message = message
-        self.success = success
+    def __init__(self):
+        self.message = ""
+        self.success = False
+        self.orderDate = None
+        self.orderTotal = 0.0
+        self.deliveryTime = None
+        self.numberBoxNeeded = 0
+        self.stopsBefore = 0
+        
 
 class DeliveryTimeAPI:
     def __init__(self, config):
         self.config = config
 
     def execute(self, wd):
-        execution_result = DeliveryTimeAPIResult("Initialized", False)
+        execution_result = DeliveryTimeAPIResult()
 
         # Do main logic here
         wd.get(self.config.get_url("login"))
@@ -65,7 +70,7 @@ class DeliveryTimeAPI:
 
         try:
             WebDriverWait(wd, 20).until(
-                EC.url_contains("montreal.lufa.com/en/marketplace")
+                EC.url_contains(config.get_url("marketplace"))
             )
         except TimeoutException:
             execution_result.message = "Did not redirect to marketplace after login"
@@ -90,20 +95,21 @@ class DeliveryTimeAPI:
         try:
             json_response = response.json()
             current_order_id = json_response["orderId"]
+            execution_result.orderDate = json_response["orderDate"]
+            execution_result.orderTotal = json_response["checkoutAmounts.unformatted_total"]
         except json.JSONDecodeError:
             execution_result.message = "Did not get back valid json from order data."
             return execution_result
 
-         #Get ETA for orderID
         data = {"user_id": self.config.user_id, "order_id": current_order_id}
         response = requests.post(self.config.get_url("orders/getTrackOrderData"), headers=headers, data=data)
 
-        current_eta = ""
-
         try:
             json_response = response.json()
-            current_eta = json_response["eta"]
-            execution_result.message = current_eta
+            execution_result.deliveryTime = json_response["eta"]
+            execution_result.message = json_response["eta"]
+            execution_result.number_box_needed = json_response["number_box_needed"]
+            execution_result.stops_before = json_response["stops_before"]
             execution_result.success = True
         except json.JSONDecodeError:
             execution_result.message = "Did not get back valid json for eta."
@@ -151,7 +157,7 @@ def execute():
     result = api.execute(wd)
     wd.close()
     print(f"Result: {result.success} Message: {result.message}")
-    return jsonify({'success': result.success, 'message': result.message})
+    return jsonify(result)
 
 
 
