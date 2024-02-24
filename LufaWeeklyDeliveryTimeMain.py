@@ -97,7 +97,7 @@ class DeliveryTimeAPI:
             json_response = response.json()
             current_order_id = json_response["orderId"]
             execution_result.orderDate = json_response["orderDate"]
-            execution_result.orderTotal = json_response["checkoutAmounts.unformatted_total"]
+            execution_result.orderTotal = json_response["checkoutAmounts"][0]["unformatted_total"]
         except json.JSONDecodeError:
             execution_result.message = "Did not get back valid json from order data."
             return execution_result
