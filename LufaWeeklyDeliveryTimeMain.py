@@ -71,7 +71,7 @@ class DeliveryTimeAPI:
 
         try:
             WebDriverWait(wd, 20).until(
-                EC.url_contains(config.get_url("marketplace"))
+                EC.url_contains("/marketplace")
             )
         except TimeoutException:
             execution_result.message = "Did not redirect to marketplace after login"
