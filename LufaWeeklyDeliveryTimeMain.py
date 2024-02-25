@@ -11,7 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 
@@ -145,32 +145,20 @@ app = Flask(__name__)
 CORS(app)
 
 @app.route('/execute', methods=['GET'])
-
 def execute():
-
-    config_json_str = os.getenv("LUFA_DELIVERY_CONFIG")
-
-    if config_json_str is None:
-        try:
-            with open("config.json") as f:
-                config_json_str = f.read()
-        except FileNotFoundError:
-            print("Cannot find config.json, exiting application...")
-            exit(1)    
-
     config = DeliveryTimeConfig()
 
-    try:
-        json_config = json.loads(config_json_str)
-        config.username = json_config["username"]
-        config.password = json_config["password"]
-        config.user_id = json_config["user_id"]
-        config.language = json_config.get("language", "en")  # default to English if not specified
+    config.username = request.args.get('username')
+    config.password = request.args.get('password')
+    config.user_id = request.args.get('user_id')
+    config.language = request.args.get('language', 'en')  # default to English if not specified
 
-    except json.JSONDecodeError:
-        print("Cannot parse JSON properly, make sure the syntax is correct and object matches the template.")
-        exit(1)
-
+    # Check if required parameters are provided
+    if not config.username or not config.password or not config.user_id:
+        return jsonify({
+            'message': "Error in the execution of the script. Missing required parameters.",
+            'success': False,
+        })
 
     api = DeliveryTimeAPI(config)
 
@@ -178,8 +166,15 @@ def execute():
     options.add_argument("--headless")
     wd = webdriver.Firefox(options=options)
 
-    result = api.execute(wd)
-    wd.close()
+    try:
+        result = api.execute(wd)
+    except Exception as e:
+        return jsonify({
+            'message': "Error in the execution of the script.",
+            'success': False,
+        })
+    finally:
+        wd.close()
 
     return jsonify({
         'message': result.message,
