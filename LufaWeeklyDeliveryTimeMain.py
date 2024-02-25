@@ -100,7 +100,7 @@ class DeliveryTimeAPI:
             current_order_id = json_response["orderId"]
             order_date_str = json_response["orderDate"]
             order_date = datetime.strptime(order_date_str, "%A, %B %dth, %Y")
-            execution_result.orderDate = order_date.timestamp()
+            execution_result.orderDate = order_date.isoformat()
             execution_result.orderTotal = json_response["checkoutAmounts"]["unformatted_total"]
         except json.JSONDecodeError:
             execution_result.message = "Did not get back valid json from order data from GetUserOrderDetails"
@@ -130,7 +130,7 @@ class DeliveryTimeAPI:
                 eta_datetime = datetime(today.year, today.month, today.day, eta_time.tm_hour, eta_time.tm_min)
 
                 # Convert to timestamp
-                execution_result.deliveryTime = eta_datetime.timestamp()
+                execution_result.deliveryTime = eta_datetime.isoformat()
             execution_result.number_box_needed = json_response.get("number_box_needed")
             execution_result.stops_before = json_response.get("stops_before")
             execution_result.success = True
