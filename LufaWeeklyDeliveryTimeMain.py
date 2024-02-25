@@ -33,6 +33,7 @@ class DeliveryTimeAPIResult:
         self.deliveryTime = None
         self.numberBoxNeeded = 0
         self.stopsBefore = 0
+        self.deliveryToday = False
         
 
 class DeliveryTimeAPI:
@@ -110,15 +111,17 @@ class DeliveryTimeAPI:
         # Check if the request was successful
         if response.status_code != 200:
             execution_result.message = "getTrackOrderData request failed."
+            execution_result.deliveryToday = False
+            execution_result.success = True
             return execution_result
 
         try:
             json_response = response.json()
             execution_result.deliveryTime = json_response.get("eta")
-            execution_result.message = json_response.get("eta")
             execution_result.number_box_needed = json_response.get("number_box_needed")
             execution_result.stops_before = json_response.get("stops_before")
             execution_result.success = True
+            execution_result.deliveryToday = True
         except json.JSONDecodeError:
             execution_result.message = "Did not get back valid json for eta from getTrackOrderData"
             return execution_result  
@@ -164,7 +167,7 @@ def execute():
 
     result = api.execute(wd)
     wd.close()
-    print(f"Result: {result.success} Message: {result.message}")
+
     return jsonify({
         'message': result.message,
         'success': result.success,
@@ -172,7 +175,8 @@ def execute():
         'orderTotal': result.orderTotal,
         'deliveryTime': result.deliveryTime,
         'numberBoxNeeded': result.numberBoxNeeded,
-        'stopsBefore': result.stopsBefore
+        'stopsBefore': result.stopsBefore,
+        'deliveryToday': result.deliveryToday 
     })
 
 
