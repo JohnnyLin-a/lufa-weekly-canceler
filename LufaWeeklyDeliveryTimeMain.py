@@ -144,14 +144,16 @@ class DeliveryTimeAPI:
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/execute', methods=['GET'])
+@app.route('/execute', methods=['POST'])
 def execute():
     config = DeliveryTimeConfig()
 
-    config.username = request.args.get('username')
-    config.password = request.args.get('password')
-    config.user_id = request.args.get('user_id')
-    config.language = request.args.get('language', 'en')  # default to English if not specified
+    data = request.get_json()
+
+    config.username = data.get('username')
+    config.password = data.get('password')
+    config.user_id = data.get('user_id')
+    config.language = data.get('language', 'en')  # default to English if not specified
 
     # Check if required parameters are provided
     if not config.username or not config.password or not config.user_id:
