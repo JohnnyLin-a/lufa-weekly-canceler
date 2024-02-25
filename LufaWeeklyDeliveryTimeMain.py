@@ -107,19 +107,21 @@ class DeliveryTimeAPI:
         data = {"user_id": self.config.user_id, "order_id": current_order_id}
         response = requests.post(self.config.get_url("orders/getTrackOrderData"), headers=headers, data=data)
 
+        # Check if the request was successful
+        if response.status_code != 200:
+            execution_result.message = "getTrackOrderData request failed."
+            return execution_result
+
         try:
             json_response = response.json()
-            eta = json_response.get("eta")
-            if eta is not None and eta != '':
-                execution_result.deliveryTime = eta
-            else:
-                execution_result.message = "ETA is null or empty."
+            execution_result.deliveryTime = json_response.get("eta")
+            execution_result.message = json_response.get("eta")
             execution_result.number_box_needed = json_response.get("number_box_needed")
             execution_result.stops_before = json_response.get("stops_before")
             execution_result.success = True
         except json.JSONDecodeError:
             execution_result.message = "Did not get back valid json for eta from getTrackOrderData"
-            return execution_result    
+            return execution_result  
 
         return execution_result
 
