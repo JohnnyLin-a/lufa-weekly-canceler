@@ -2,6 +2,7 @@ import os
 import json
 import requests
 from datetime import datetime
+from time import strptime
 from selenium import webdriver
 from selenium.webdriver import FirefoxOptions
 from selenium import webdriver
@@ -110,14 +111,26 @@ class DeliveryTimeAPI:
 
         # Check if the request was successful
         if response.status_code != 200:
-            execution_result.message = "getTrackOrderData request failed."
+            execution_result.message = "getTrackOrderData request failed / no delivery today."
             execution_result.deliveryToday = False
             execution_result.success = True
             return execution_result
 
         try:
             json_response = response.json()
-            execution_result.deliveryTime = json_response.get("eta")
+            eta_time_str = json_response.get("eta")
+            if eta_time_str:
+                # Parse the time string
+                eta_time = strptime(eta_time_str, "%H:%M")
+
+                # Get today's date
+                today = datetime.today()
+
+                # Combine today's date with the ETA time
+                eta_datetime = datetime(today.year, today.month, today.day, eta_time.tm_hour, eta_time.tm_min)
+
+                # Convert to timestamp
+                execution_result.deliveryTime = eta_datetime.timestamp()
             execution_result.number_box_needed = json_response.get("number_box_needed")
             execution_result.stops_before = json_response.get("stops_before")
             execution_result.success = True
