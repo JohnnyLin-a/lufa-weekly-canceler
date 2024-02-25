@@ -89,7 +89,6 @@ class DeliveryTimeAPI:
         }
         data = {"user_id": self.config.user_id}
         
-        #Get order details for orderID
         response = requests.post(self.config.get_url("superMarket/GetUserOrderDetails"), headers=headers, data=data)
 
         current_order_id = ""
@@ -102,7 +101,7 @@ class DeliveryTimeAPI:
             execution_result.orderDate = order_date.timestamp()
             execution_result.orderTotal = json_response["checkoutAmounts"]["unformatted_total"]
         except json.JSONDecodeError:
-            execution_result.message = "Did not get back valid json from order data."
+            execution_result.message = "Did not get back valid json from order data from GetUserOrderDetails"
             return execution_result
 
         data = {"user_id": self.config.user_id, "order_id": current_order_id}
@@ -110,15 +109,17 @@ class DeliveryTimeAPI:
 
         try:
             json_response = response.json()
-            execution_result.deliveryTime = json_response["eta"]
-            execution_result.message = json_response["eta"]
-            execution_result.number_box_needed = json_response["number_box_needed"]
-            execution_result.stops_before = json_response["stops_before"]
+            eta = json_response.get("eta")
+            if eta is not None and eta != '':
+                execution_result.deliveryTime = eta
+            else:
+                execution_result.message = "ETA is null or empty."
+            execution_result.number_box_needed = json_response.get("number_box_needed")
+            execution_result.stops_before = json_response.get("stops_before")
             execution_result.success = True
-            print(f"Delivery Time: {self.deliveryTime}, Message: {self.message}, Number of Boxes Needed: {self.number_box_needed}, Stops Before: {self.stops_before}, Success: {self.success}")
         except json.JSONDecodeError:
-            execution_result.message = "Did not get back valid json for eta."
-            return execution_result       
+            execution_result.message = "Did not get back valid json for eta from getTrackOrderData"
+            return execution_result    
 
         return execution_result
 
