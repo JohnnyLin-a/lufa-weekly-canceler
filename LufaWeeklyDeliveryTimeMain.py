@@ -159,7 +159,15 @@ def execute():
     result = api.execute(wd)
     wd.close()
     print(f"Result: {result.success} Message: {result.message}")
-    return jsonify(result)
+    return jsonify({
+        'message': result.message,
+        'success': result.success,
+        'orderDate': result.orderDate,
+        'orderTotal': result.orderTotal,
+        'deliveryTime': result.deliveryTime,
+        'numberBoxNeeded': result.numberBoxNeeded,
+        'stopsBefore': result.stopsBefore
+    })
 
 
 
