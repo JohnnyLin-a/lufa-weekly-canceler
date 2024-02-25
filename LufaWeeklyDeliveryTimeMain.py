@@ -112,6 +112,7 @@ class DeliveryTimeAPI:
             execution_result.number_box_needed = json_response["number_box_needed"]
             execution_result.stops_before = json_response["stops_before"]
             execution_result.success = True
+            print(f"Delivery Time: {self.deliveryTime}, Message: {self.message}, Number of Boxes Needed: {self.number_box_needed}, Stops Before: {self.stops_before}, Success: {self.success}")
         except json.JSONDecodeError:
             execution_result.message = "Did not get back valid json for eta."
             return execution_result       
