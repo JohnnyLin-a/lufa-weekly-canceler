@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver import FirefoxOptions
 from selenium import webdriver
@@ -96,7 +97,9 @@ class DeliveryTimeAPI:
         try:
             json_response = response.json()
             current_order_id = json_response["orderId"]
-            execution_result.orderDate = json_response["orderDate"]
+            order_date_str = json_response["orderDate"]
+            order_date = datetime.strptime(order_date_str, "%A, %B %dth, %Y")
+            execution_result.orderDate = order_date.timestamp()
             execution_result.orderTotal = json_response["checkoutAmounts"]["unformatted_total"]
         except json.JSONDecodeError:
             execution_result.message = "Did not get back valid json from order data."
