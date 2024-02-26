@@ -1,3 +1,13 @@
+# REPOSITORY ARCHIVE NOTICE
+This repository is now archived. You are free to fork this or to visit an updated python implementation.  
+At the time of writing, the most up-to-date python code is located here: https://github.com/maxperron/lufa-delivery  
+- commit hash: `f8b04b4`  
+- branch: `dev-testing`
+
+(According to this [PR #2](https://github.com/JohnnyLin-a/lufa-weekly-canceler/pull/2))
+
+# Original README below:
+
 # Lufa Farms weekly order canceler
 
 Once upon a time, we were able to order grocery from Lufa Farms whenever and however we wanted.  
